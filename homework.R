@@ -1,55 +1,70 @@
-#PSYC 259 Homework 3 - Data Transformation
-#For full credit, provide answers for at least 7/11
+# PSYC 259 Homework 3 - Data Transformation
+# For full credit, provide answers for at least 7/11
 
-#List names of students collaborating with: 
+# List names of students collaborating with:
 
 ### SETUP: RUN THIS BEFORE STARTING ----------
 
-#Load packages
+# Load packages
 library(tidyverse)
 ds <- read_csv("data_raw/rolling_stone_500.csv")
+library(dplyr)
 
-### Question 1 ---------- 
+### Question 1 ----------
 
-#Use a function to check the class of all of the variables in 'ds' 
-#Convert "Year" to a numeric, saving it back to 'ds'
-#Use a function to check that your conversion succeeded
+# Use a function to check the class of all of the variables in 'ds'
+# Convert "Year" to a numeric, saving it back to 'ds'
+# Use a function to check that your conversion succeeded
 
-#ANSWER
+# ANSWER
+glimpse(ds)
+class(ds)
+ds$Year <- as.numeric(ds$Year)
+glimpse(ds)
+# it worked!
 
-
-### Question 2 ---------- 
+### Question 2 ----------
 
 # Using a dplyr function,
 # change ds so that all of the variables are lowercase
 
-#ANSWER
+# ANSWER
 
-
+names(ds) <- tolower(names(ds))
+glimpse(ds)
+# worked again!
 ### Question 3 ----------
 
 # Use mutate to create a new variable in ds that has the decade of the year as a number
 # For example, 1971 would become 1970, 2001 would become 2000
 # Hint: read the documentation for ?floor and make sure year is numeric (from Question 1)
 
-#ANSWER
+# ANSWER
+ds <- ds %>% mutate(decades_year = (year %/% 10) * 10)
+glimpse(ds)
 
 
-### Question 4 ----------
+### Question 4 ------rank### Question 4 ----------
 
 # Sort the dataset by rank so that 1 is at the top
 
-#ANSWER
-
+# ANSWER
+ds <- ds %>% arrange(rank)
+glimpse(ds)
+# done
 
 ### Question 5 ----------
 
 # Use filter and select to create a new tibble called 'top10'
 # That just has the artists and songs for the top 10 songs
 
-#ANSWER
+# ANSWER
 
-
+top10 <- ds %>%
+  filter(rank <= 10) %>%
+  select("song", "artist")
+glimpse(ds)
+# done
 
 ### Question 6 ----------
 
@@ -57,21 +72,43 @@ ds <- read_csv("data_raw/rolling_stone_500.csv")
 # and save the results to a new tibble called "ds_sum"
 # Hint, the function drop_na() might help. Read ?drop_na
 
-#ANSWER
-
+# ANSWER
+ds_sum <- ds %>%
+  drop_na(year) %>%
+  summarize(earliest = min(year), most_recent = max(year), average = mean(year))
 
 ### Question 7 ----------
 
-# Use filter on the original dataset 'ds' to find all of the artists/song titles from 
+# Use filter on the original dataset 'ds' to find all of the artists/song titles from
 # the min/max/mean years that you identified in 'ds_sum'
 # Use one filter command only, and sort the responses by year
 # Bonus: find a way to do it without hard coding the years (i.e. pull them from ds_sum)
 # (this might take some searching to find functions that will help)
 
-#ANSWER
+# ANSWER
+ds %>%
+  filter(year %in% c(ds_sum$earliest, ds_sum$most_recent, round(ds_sum$average))) %>%
+  arrange(year)
 
+# rank song                        artist          year decades_year
+#<dbl> <chr>                       <chr>          <dbl>        <dbl>
+# 1   389 Brass in Pocket             Pretenders      1879         1870
+# 2    28 Once in a Lifetime          Talking Heads   1980         1980
+# 3    41 Love Will Tear Us Apart     Joy Division    1980         1980
+# 4    42 Redemption Song             Bob Marley      1980         1980
+# 5   142 He Stopped Loving Her Today George Jones    1980         1980
+# 6   143 London Calling              The Clash       1980         1980
+# 7   249 Bad Reputation              Joan Jett       1980         1980
+# 8   287 You Shook Me All Night Long AC/DC           1980         1980
+# 9   288 That’s the Joint            The Funky Fou…  1980         1980
+# 10   363 Could You Be Loved          Bob Marley      1980         1980
+# 11   385 I’m Coming Out              Diana Ross      1980         1980
+# 12   442 Ace of Spades               Motorhead       1980         1980
+# 13   329 Safaera                     Bad Bunny       2020         2020
+# 14   346 Dynamite                    BTS             2020         2020
+# 15   438 Savage (Remix)              Megan Thee St…  2020         2020
 
-### Question 8 ---------- 
+### Question 8 ----------
 
 # There's an error here. The oldest song "Brass in Pocket"
 # is from 1979! Use mutate and ifelse to fix the error in 'ds'
@@ -79,18 +116,35 @@ ds <- read_csv("data_raw/rolling_stone_500.csv")
 # recalculate the responses from Questions 6-7 to
 # find the correct oldest, averag-ist, and most recent songs
 
-#ANSWER
+# ANSWER
+ds <- ds %>%
+  mutate(
+    year = ifelse(song == "Brass in Pocket", 1979, year),
+    decades_year = floor(year / 10) * 10
+  )
 
+ds_sum <- ds %>%
+  drop_na(year) %>%
+  summarize(
+    earliest = min(year),
+    most_recent = max(year),
+    average = mean(year)
+  )
+ds %>%
+  filter(year %in% c(ds_sum$earliest, ds_sum$most_recent, round(ds_sum$average))) %>%
+  arrange(year)
+
+# worked!
 
 ### Question 9 ---------
 
-# Use group_by and summarize to find the average rank and 
+# Use group_by and summarize to find the average rank and
 # number of songs on the list by decade. To make things easier
 # filter out the NA values from decade before summarizing
 # You don't need to save the results anywhere
 # Use the pipe %>% to string the commands together
 
-#ANSWER
+# ANSWER
 
 
 ### Question 10 --------
@@ -101,8 +155,10 @@ ds <- read_csv("data_raw/rolling_stone_500.csv")
 # Use the pipe %>% to string the commands together
 # Check against your answers from Question 9 to make sure it matches
 
-#ANSWER
+# ANSWER
 
 
 ### Question 11 ------
 # Use RStudio's styler to style all the code in your homework
+install.packages("styler")
+#it worked! 
