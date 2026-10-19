@@ -146,7 +146,13 @@ ds %>%
 
 # ANSWER
 
-
+ds %>%
+  filter(!is.na(decades_year)) %>%
+  group_by(decades_year) %>%
+  summarize(
+    avg_rank = mean(rank),
+    n_songs = n()
+  )
 ### Question 10 --------
 
 # Look up the dplyr "count" function
@@ -157,8 +163,13 @@ ds %>%
 
 # ANSWER
 
+ds %>%
+  filter(!is.na(decades_year)) %>%
+  count(decades_year) %>%
+  slice_max(n)
+#done!
 
 ### Question 11 ------
 # Use RStudio's styler to style all the code in your homework
 install.packages("styler")
-#it worked! 
+# it worked!
